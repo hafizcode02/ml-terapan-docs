@@ -1,5 +1,3 @@
-# Laporan Proyek Machine Learning - Hafiz Caniago
-
 ## Domain Proyek
 
 Proyek ini mengangkat tema untuk memprediksi harga komoditas pangan yang ada di pasar Kramat Kota Cirebon. tema ini diangkat karena masalah kenaikan harga yang sangat fluktuatif untuk komoditas pangan yang ada sehingga pihak terkait dapat mempersiapkan langkah yang lebih awal untuk mencegah kenaikan harga yang tidak terkendali. proyek ini melakukan pendekatan prediksi menggunakan deep learning dan kombinasi algoritma LSTM-GRU untuk membuat model prediksi, kombinasi tersebut dipilih setelah melakukan beberapa tinjauan pada jurnal. pada penelitian ini dataset yang digunakan ada 5 data harga komoditas pangan dengan tingkat persentase kenaikan tertinggi, namun pada dokumentasi ini, saya hanya menggunakan 1 buah komoditas saja (bawang merah) untuk mensimplifikasi dokumentasi.
@@ -39,7 +37,7 @@ Berdasarkan data harga yang diperoleh dari proses scrapping website Pusat Inform
 - Kenaikan harga adalah selisih antara harga maksimum dan harga minimum.
 
 
-Dapat dilihat bahwa di antara komoditas-komoditas tersebut, cabai merah besar mengalami kenaikan tertinggi sebesar 596,2%, diikuti cabai merah keriting (517,6%), cabai rawit hijsau (488,2%), cabai rawit merah (389,8%), dan bawang merah (268,4%). 
+Dapat dilihat bahwa di antara komoditas-komoditas tersebut, cabai merah besar mengalami kenaikan tertinggi sebesar 596,2%, diikuti cabai merah keriting (517,6%), cabai rawit hijau (488,2%), cabai rawit merah (389,8%), dan bawang merah (268,4%). 
 
 Berbagai upaya telah dilakukan oleh pihak terkait untuk mengendalikan fluktuasi harga, salah satunya melalui inspeksi mendadak (sidak) pasar. Sidak pasar merupakan kegiatan pemeriksaan kondisi pasar secara langsung dan tanpa pemberitahuan sebelumnya oleh pejabat pemerintah, biasanya dari Dinas Perdagangan atau instansi terkait lainnya. Kegiatan ini bertujuan untuk memastikan stabilitas harga komoditas pangan.
 
@@ -116,19 +114,42 @@ Selanjutnya, output ini diproses oleh hidden layer kedua, yaitu GRU yang juga me
 Nilai ini kemudian diteruskan ke Dense layer tunggal untuk menghasilkan nilai akhir sebagai output prediksi dari model.
 
 ## Evaluation
-Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
+Evaluasi disini dilakukan dengan menggunakan metriks RMSE, MSE, MAPE, Accuracy untuk melihat performa model.
 
-Sebagai contoh, Anda memiih kasus klasifikasi dan menggunakan metrik **akurasi, precision, recall, dan F1 score**. Jelaskan mengenai beberapa hal berikut:
-- Penjelasan mengenai metrik yang digunakan
-- Menjelaskan hasil proyek berdasarkan metrik evaluasi
+**Detail Pengertian Metriks yang digunakan**
 
-Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, problem statement, dan solusi yang diinginkan.
+<img src="https://github.com/user-attachments/assets/fc29ae29-f792-46c8-a1d0-ca457e1c7e73" height=100 width=200>
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan formula metrik dan bagaimana metrik tersebut bekerja.
+MSE = Mean Squared Error atau menghitung rata rata kuadrat error dari nilai prediksi dan nilai aktual
 
-**---Ini adalah bagian akhir laporan---**
+![image](https://github.com/user-attachments/assets/2d00b4d1-1f68-4928-95da-fa15a7c73a02)
 
-_Catatan:_
-- _Anda dapat menambahkan gambar, kode, atau tabel ke dalam laporan jika diperlukan. Temukan caranya pada contoh dokumen markdown di situs editor [Dillinger](https://dillinger.io/), [Github Guides: Mastering markdown](https://guides.github.com/features/mastering-markdown/), atau sumber lain di internet. Semangat!_
-- Jika terdapat penjelasan yang harus menyertakan code snippet, tuliskan dengan sewajarnya. Tidak perlu menuliskan keseluruhan kode project, cukup bagian yang ingin dijelaskan saja.
+RMSE = Root Mean Squared Error atau menghitung akar dari rata rata kuadrat error dari nilai prediksi dan nilai aktual 
+
+![image](https://github.com/user-attachments/assets/6d03e7e7-7cef-48d6-933d-a52d2637dac3)
+
+MAPE = Mean average percentage error atau menghitung rata rata nilai error kemudian dikalikan 100%
+
+Accuracy = 1 - MAPE
+
+**Hasil Evaluasi**
+
+hasil evaluasi menunjukan performa yang cukup baik dengan nilai sebagai berikut (data masih dalam bentuk normalisasi) : 
+
+```
+Test Loss (MSE): 0.0011948698665946722
+Test RMSE: 0.034566878222976216
+Test MAPE: 0.04133664902587545
+Test Accuracy: 0.9586633509741246
+```
+
+hasil evaluasi menunjukan performa yang cukup baik dengan nilai sebagai berikut (data sudah didenormalisasi agar tercermin hasil yang lebih nyata) : 
+
+```
+Test MSE on denormalized data: 3107819.0593
+Test RMSE on denormalized data: 1762.900
+Test MAPE on denormalized data: 1.807%
+Test Accuracy on denormalized data: 98.1%
+```
+
+kedua hasil evaluasi prediksi tersebut baik masih dalam bentuk normalisasi atau denormalisasi menghasilkan hasil evaluasi yang baik.
