@@ -2,7 +2,7 @@
 
 ## Domain Proyek
 
-Proyek ini mengangkat tema untuk memprediksi harga komoditas pangan yang ada di pasar Kramat Kota Cirebon. tema ini diangkat karena masalah kenaikan harga yang sangat fluktuatif untuk komoditas pangan yang ada sehingga pihak terkait dapat mempersiapkan langkah yang lebih awal untuk mencegah kenaikan harga yang tidak terkendali. proyek ini melakukan pendekatan prediksi menggunakan deep learning dan kombinasi algoritma LSTM-GRU untuk membuat model prediksi, kombinasi tersebut dipilih setelah melakukan beberapa tinjauan pada jurnal. pada penelitian ini dataset yang digunakan ada 5 data harga komoditas pangan dengan tingkat persentase kenaikan tertinggi, namun pada dokumentasi ini, saya hanya menggunakan 1 buah komoditas saja untuk mensimplifikasi dokumentasi.
+Proyek ini mengangkat tema untuk memprediksi harga komoditas pangan yang ada di pasar Kramat Kota Cirebon. tema ini diangkat karena masalah kenaikan harga yang sangat fluktuatif untuk komoditas pangan yang ada sehingga pihak terkait dapat mempersiapkan langkah yang lebih awal untuk mencegah kenaikan harga yang tidak terkendali. proyek ini melakukan pendekatan prediksi menggunakan deep learning dan kombinasi algoritma LSTM-GRU untuk membuat model prediksi, kombinasi tersebut dipilih setelah melakukan beberapa tinjauan pada jurnal. pada penelitian ini dataset yang digunakan ada 5 data harga komoditas pangan dengan tingkat persentase kenaikan tertinggi, namun pada dokumentasi ini, saya hanya menggunakan 1 buah komoditas saja (bawang merah) untuk mensimplifikasi dokumentasi.
 
 **Referensi**
 - [Prediksi Harga Komoditas Pangan Menggunakan Algoritma Long Short-Term Memory (LSTM)](https://ejurnal.seminar-id.com/index.php/bits/article/view/2229)
@@ -43,7 +43,7 @@ Dapat dilihat bahwa di antara komoditas-komoditas tersebut, cabai merah besar me
 
 Berbagai upaya telah dilakukan oleh pihak terkait untuk mengendalikan fluktuasi harga, salah satunya melalui inspeksi mendadak (sidak) pasar. Sidak pasar merupakan kegiatan pemeriksaan kondisi pasar secara langsung dan tanpa pemberitahuan sebelumnya oleh pejabat pemerintah, biasanya dari Dinas Perdagangan atau instansi terkait lainnya. Kegiatan ini bertujuan untuk memastikan stabilitas harga komoditas pangan.
 
-Namun, dalam praktiknya, sidak pasar seringkali dilakukan hanya pada waktu-waktu tertentu atau setelah adanya laporan mengenai lonjakan harga yang tidak wajar. Hal ini menyebabkan keterlambatan dalam pengambilan tindakan lanjutan, seperti pengeluaran cadangan pangan, sehingga harga komoditas pangan terus meningkat.
+Namun, dalam praktiknya, sidak pasar seringkali dilakukan hanya pada waktu-waktu tertentu atau setelah adanya laporan mengenai lonjakan harga yang tidak wajar. Hal ini menyebabkan keterlambatan dalam pengambilan tindakan lanjutan, seperti pengeluaran cadangan pangan, sehingga harga komoditas pangan terus meningkat. Sehingga salah satu cara untuk mengatasi hal tersebut adalah dengan melakukan prediksi harga.
 
 ### Problem Statements
 
@@ -56,44 +56,64 @@ Tujuan dilakukan nya penelitian :
 - Untuk mencegah lonjakan harga komoditas dengan melakukan antisipasi dini terhadap potensi kenaikan harga berdasarkan hasil prediksi, sehingga dapat mempersiapkan langkah-langkah pengendalian yang diperlukan oleh pihak terkait.
 
 ### Solution
-- Melakukan pelatihan model untuk memprediksi harga komoditas pangan, pendekatan algoritma yang digunakan adalah algoritma LSTM-GRU. hyperparameter tuning juga dilakuan
-
-Semua poin di atas harus diuraikan dengan jelas. Anda bebas menuliskan berapa pernyataan masalah dan juga goals yang diinginkan.
-
-**Rubrik/Kriteria Tambahan (Opsional)**:
-- Menambahkan bagian “Solution Statement” yang menguraikan cara untuk meraih goals. Bagian ini dibuat dengan ketentuan sebagai berikut: 
-
-    ### Solution statements
-    - Mengajukan 2 atau lebih solution statement. Misalnya, menggunakan dua atau lebih algoritma untuk mencapai solusi yang diinginkan atau melakukan improvement pada baseline model dengan hyperparameter tuning.
-    - Solusi yang diberikan harus dapat terukur dengan metrik evaluasi.
+- Melakukan pelatihan model untuk memprediksi harga komoditas pangan, pendekatan algoritma yang digunakan adalah algoritma LSTM-GRU.
 
 ## Data Understanding
-Paragraf awal bagian ini menjelaskan informasi mengenai data yang Anda gunakan dalam proyek. Sertakan juga sumber atau tautan untuk mengunduh dataset. Contoh: [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/Restaurant+%26+consumer+data).
 
-Selanjutnya uraikanlah seluruh variabel atau fitur pada data. Sebagai contoh:  
+Dataset ini mengadung 6 buah kolom, satu berisi tanggal dan sisanya berisi komoditas harga pangan dengan persentase kenaikan diatas 100% dalam 3 tahun terakhir (3 Mei 2021 - 3 Mei 2024). namun karena peramalan ini menggunakan data univariate (data tunggal), jadi setiap nilai di setiap kolom tidak memiliki saling berkaitan. dataset ini diambil dari website [PIHPS Nasional](https://www.bi.go.id/hargapangan)
 
-### Variabel-variabel pada Restaurant UCI dataset adalah sebagai berikut:
-- accepts : merupakan jenis pembayaran yang diterima pada restoran tertentu.
-- cuisine : merupakan jenis masakan yang disajikan pada restoran.
-- dst
-
-**Rubrik/Kriteria Tambahan (Opsional)**:
-- Melakukan beberapa tahapan yang diperlukan untuk memahami data, contohnya teknik visualisasi data atau exploratory data analysis.
+kolom : 
+- date : Tanggal diambilnya harga
+- cabai_merah_besar : harga cabai merah besar
+- cabai_merah_keriting : harga cabai merah keriting
+- cabai_rawit_hijau : harga cabai rawit hijau
+- cabai_rawit_merah : harga cabai rawit merah
+- bawang_merah : harga bawang merah
 
 ## Data Preparation
-Pada bagian ini Anda menerapkan dan menyebutkan teknik data preparation yang dilakukan. Teknik yang digunakan pada notebook dan laporan harus berurutan.
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan proses data preparation yang dilakukan
-- Menjelaskan alasan mengapa diperlukan tahapan data preparation tersebut.
+Data preparation meliputi : 
+- Interpolasi dataset
+- Pemecahahan dataset (80 % train & 20 % test)
+- Normalisasi data
+- Pembentukan Sliding Window
+
+Penjelasan : 
+- Interpolasi dataset diperlukan agar tidak adanya data kosong, interpolasi dilakukan dengan teknik interpolasi linear yang mengisi nilai nilai kosong pada dataset (sudah dilakukan sebelumnya, tidak dari kode colab)
+- Pemecahan dataset menjadi 80% train dan 20% test diperlukan agar model bisa belajar dengan baik.
+- Normalisasi data dilakukan agar bentuk data menjadi seragam (rentang 0 - 1) dan proses komputasi lebih ringan.
+- Dalam konteks prediksi menggunakan deep learning, teknik sliding window membantu memecah data berurutan menjadi segmen-segmen yang lebih kecil sehingga memungkinkan model untuk mempelajari pola-pola lokal dalam data dan membuat prediksi berdasarkan data historis dalam jendela tersebut. jika dari konteks model yang kita buat, saya ingin melakukan prediksi harga berdasarkan data 30 hari terakhir.
 
 ## Modeling
-Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyelesaikan permasalahan. Anda perlu menjelaskan tahapan dan parameter yang digunakan pada proses pemodelan.
+Pada tahap ini, modelling dilakukan dengan tensorflow dan menggunakan Algoritma LSTM-GRU
+```bash
+# Create LSTM + GRU Model
+def define_model():
+    input1 = Input(shape=(window_size,1))
+    x = LSTM(units = set_neurons, return_sequences=True)(input1)
+    x = GRU(units = set_neurons)(x)  # Setting return_sequences=False to get 2D output
+    dnn_output = Dense(1)(x)
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan kelebihan dan kekurangan dari setiap algoritma yang digunakan.
-- Jika menggunakan satu algoritma pada solution statement, lakukan proses improvement terhadap model dengan hyperparameter tuning. **Jelaskan proses improvement yang dilakukan**.
-- Jika menggunakan dua atau lebih algoritma pada solution statement, maka pilih model terbaik sebagai solusi. **Jelaskan mengapa memilih model tersebut sebagai model terbaik**.
+    model = Model(inputs=input1, outputs=[dnn_output])
+    model.compile(loss='mean_squared_error', optimizer=Adam())
+    model.summary()
+
+    return model
+```
+Pada file google colab ini, dilakukan pelatihan model tersebut menggunakan hyperparameter:
+- epoch : 100
+- neurons : 16
+- batch_size : 32
+- optimizer: Adam
+
+gambaran visual bagaimana model terhubung dapat dilihat pada gambar berikut : 
+![image](https://github.com/user-attachments/assets/4aa3fd6d-b8ba-4738-a6dc-1439a5ab86d1)
+
+Model ini bekerja dengan cara menerima 30 data input pada layer pertama yang membentuk node pada input layer. Setelah itu, input diteruskan ke hidden layer pertama, yaitu LSTM dengan jumlah 16 neuron. Pada proses ini, LSTM mengembalikan output dengan return_sequences=True, yang berarti setiap timestep menghasilkan output dan seluruh urutan akan diteruskan ke layer berikutnya. Output dari LSTM memiliki bentuk (batch_size, 30 timesteps, 16 unit).
+
+Selanjutnya, output ini diproses oleh hidden layer kedua, yaitu GRU yang juga memiliki 16 neuron. GRU ini mengembalikan output dengan return_sequences=False, sehingga hanya output dari timestep terakhir yang digunakan. Hasil dari GRU berbentuk (batch_size, 16 unit).
+
+Nilai ini kemudian diteruskan ke Dense layer tunggal untuk menghasilkan nilai akhir sebagai output prediksi dari model.
 
 ## Evaluation
 Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
