@@ -386,7 +386,7 @@ table_data = pd.DataFrame({
 })
 
 # Calculate the Percentage Error (often used in Mean Absolute Percentage Error or MAPE)
-table_data['Persentase Error'] = (table_data['Harga Prediksi']) / (table_data['Harga Asli']  * 100)
+table_data['Persentase Error'] = ((table_data['Harga Asli'] / table_data['Harga Prediksi']) * 100)
 
 table_data
 
