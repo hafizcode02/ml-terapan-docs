@@ -45,20 +45,22 @@ Namun, dalam praktiknya, sidak pasar seringkali dilakukan hanya pada waktu-waktu
 
 ### Problem Statements
 
-Poin Permasalahan :
-- Kenaikan harga komoditas pangan yang sangat fluktuatif dan tidak dapat diprediksi.
-- Keterlambatan penanganan tindak lanjut dari pihak terkait atas kenaikan harga komoditas pangan tertentu, sehingga harga melonjak secara tiba tiba dan tidak terkendali.
+Problem Statements :
+- Bagaimana cara mengatasi Kenaikan harga komoditas pangan yang sangat fluktuatif dan tidak dapat diprediksi?.
+- Bagaimana cara mempercepat penanganan tindak lanjut dari pihak terkait atas kenaikan harga komoditas pangan, agar harga pangan dapat lebih terkendali?
 
 ### Goals
 Tujuan dilakukan nya penelitian :
-- Untuk mencegah lonjakan harga komoditas dengan melakukan antisipasi dini terhadap potensi kenaikan harga berdasarkan hasil prediksi, sehingga dapat mempersiapkan langkah-langkah pengendalian yang diperlukan oleh pihak terkait.
-
-### Solution
-- Melakukan pelatihan model untuk memprediksi harga komoditas pangan, pendekatan algoritma yang digunakan adalah algoritma LSTM-GRU.
+- untuk mengembangkan model deep learning (LSTM-GRU) sebagai alat untuk prediksi harga komoditas pangan.
+- untuk dijadikan bagian dari percepatan untuk penanganan tindak lanjut dari pihak terkait dalam melakukan pengendalian harga pangan agar bisa tetap terjaga.
 
 ## Data Understanding
 
 Dataset ini mengadung 6 buah kolom, satu berisi tanggal dan sisanya berisi komoditas harga pangan dengan persentase kenaikan diatas 100% dalam 3 tahun terakhir (3 Mei 2021 - 3 Mei 2024). namun karena peramalan ini menggunakan data univariate (data tunggal), jadi setiap nilai di setiap kolom tidak memiliki saling berkaitan. dataset ini diambil dari website [PIHPS Nasional](https://www.bi.go.id/hargapangan)
+
+jumlah data : 1096 baris data & 6 kolom.
+
+kondisi data : sebelumnya terdapat data kosong pada hari sabtu dan minggu, serta beberapa hari yang kosong juga. namun sebelum masuk ke pelatihan model ini, data yang kosong tersebut telah dilakukan proses interpolasi dengan teknik **interpolasi linear** di excel.
 
 kolom : 
 - date : Tanggal diambilnya harga
@@ -70,17 +72,9 @@ kolom :
 
 ## Data Preparation
 
-Data preparation meliputi : 
-- Interpolasi dataset
-- Pemecahahan dataset (80 % train & 20 % test)
-- Normalisasi data
-- Pembentukan Sliding Window
-
-Penjelasan : 
-- Interpolasi dataset diperlukan agar tidak adanya data kosong, interpolasi dilakukan dengan teknik interpolasi linear yang mengisi nilai nilai kosong pada dataset (sudah dilakukan sebelumnya, tidak dari kode colab)
-- Pemecahan dataset menjadi 80% train dan 20% test diperlukan agar model bisa belajar dengan baik.
-- Normalisasi data dilakukan agar bentuk data menjadi seragam (rentang 0 - 1) dan proses komputasi lebih ringan.
-- Dalam konteks prediksi menggunakan deep learning, teknik sliding window membantu memecah data berurutan menjadi segmen-segmen yang lebih kecil sehingga memungkinkan model untuk mempelajari pola-pola lokal dalam data dan membuat prediksi berdasarkan data historis dalam jendela tersebut. jika dari konteks model yang kita buat, saya ingin melakukan prediksi harga berdasarkan data 30 hari terakhir.
+- Pemecahahan dataset (80 % train & 20 % test), hal ini diperlukan agar model bisa belajar dengan baik.
+- Normalisasi data dilakukan agar bentuk data menjadi seragam (rentang 0 - 1) dan proses komputasi dalam pelatihan model menjadi lebih ringan.
+- Pembentukan Sliding Window. Dalam konteks prediksi menggunakan deep learning, teknik sliding window membantu memecah data berurutan menjadi segmen-segmen yang lebih kecil sehingga memungkinkan model untuk mempelajari pola-pola lokal dalam data dan membuat prediksi berdasarkan data historis dalam jendela tersebut. jika dari konteks model yang kita buat, saya ingin melakukan prediksi harga berdasarkan data 30 hari terakhir (window_size = 30).
 
 ## Modeling
 Pada tahap ini, modelling dilakukan dengan tensorflow dan menggunakan Algoritma LSTM-GRU
@@ -137,19 +131,19 @@ Accuracy = 1 - MAPE
 hasil evaluasi menunjukan performa yang cukup baik dengan nilai sebagai berikut (data masih dalam bentuk normalisasi) : 
 
 ```
-Test Loss (MSE): 0.0011948698665946722
-Test RMSE: 0.034566878222976216
-Test MAPE: 0.04133664902587545
-Test Accuracy: 0.9586633509741246
+Test Loss (MSE): 0.0015037448611110449
+Test RMSE: 0.038778112321401444
+Test MAPE: 0.06523878888823192
+Test Accuracy: 0.934761211111768
 ```
 
 hasil evaluasi menunjukan performa yang cukup baik dengan nilai sebagai berikut (data sudah didenormalisasi agar tercermin hasil yang lebih nyata) : 
 
 ```
-Test MSE on denormalized data: 3107819.0593
-Test RMSE on denormalized data: 1762.900
-Test MAPE on denormalized data: 1.807%
-Test Accuracy on denormalized data: 98.1%
+Test MSE on denormalized data: 3911326.8858
+Test RMSE on denormalized data: 1977.7074
+Test MAPE on denormalized data: 2.701%
+Test Accuracy on denormalized data: 97.29%
 ```
 
 kedua hasil evaluasi prediksi tersebut baik masih dalam bentuk normalisasi atau denormalisasi menghasilkan hasil evaluasi yang baik.
