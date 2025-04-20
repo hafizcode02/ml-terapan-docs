@@ -60,6 +60,7 @@ from keras.callbacks import ModelCheckpoint
 # JobLib
 import joblib
 
+# Export requirements.txt
 !pip freeze > requirements.txt
 
 """## Data Preparation
@@ -76,6 +77,26 @@ df
 df.info()
 
 df.describe()
+
+"""> dari hasil deskripsi dari data, terdapat 5 kolom dataset komoditas pangan dengan masing masing data berjumlah 1097 baris.
+- harga cabai merah besar
+  - max : 110,000
+  - min : 16,000
+- harga cabai merah keriting
+  - max : 105,000
+  - min : 17,000
+- harga cabai rawit hijau
+  - max : 100,000
+  - min : 17,000
+- harga cabai rawit merah
+  - max : 120,000
+  - min : 16,000
+- harga bawang merah
+  - max : 70,000
+  - min : 19,000
+
+> Kode dibawah ini akan menstransformasikan kolom 'date' dari tipe data object ke tipe data date, serta melakukan konversi bentuk tanggal untuk 'date' jika tidak berformat 'Y-m-d'. serta melakukan konversi tipe data harga ke dalam bentuk float.
+"""
 
 # Mentransformasikan Data ke Format Datetime
 df.date = pd.to_datetime(df.date, format = '%Y-%m-%d')
@@ -111,7 +132,10 @@ fig.update_layout(xaxis_title="Waktu Historis",
                   title={'text': chart_title, 'y':0.95, 'x':0.5, 'xanchor':'center', 'yanchor':'top'},
                   plot_bgcolor='rgba(255,223,0,0.8)')
 
-"""### Normalisasi, Split Data Training & Testing, Pembentukan Pola Time Series"""
+"""### Normalisasi, Split Data Training & Testing, Pembentukan Pola Time Series
+
+> Mempersiapkan instance scaler dan mengeluarkan file format scaler.pkl agar model bisa digunakan di luar google colab. (contoh : inference menggunakan model dan skalar yang sudah di export)
+"""
 
 # Data Scaling
 scaler = MinMaxScaler()
@@ -120,9 +144,21 @@ scaler.fit(df[comodity_list[comodity_selected]].values.reshape(-1,1))
 # Save the scaler
 joblib.dump(scaler, 'scaler.pkl')
 
+"""
+
+> menyiapkan variable yang menampung jumlah atau ukuran data testing (20%)
+
+"""
+
 # Set Panjang Data Test
 test_size = int(len(df) * set_test_size)
 test_size
+
+"""
+
+> Melakukan visualisasi untuk menggambarkan seberapa banyak data training dan data testing
+
+"""
 
 # Ploting Data Training dan Test
 plt.figure(figsize=(15, 6), dpi=150)
@@ -136,6 +172,13 @@ plt.ylabel('Harga', fontsize=12)
 plt.legend(['Data Training', 'Data Testing'], loc='upper left', prop={'size': 15})
 plt.grid(color='white')
 plt.show()
+
+"""- menyiapkan ukuran window_size
+- menyiapkan data training (80%) data
+- melakukan normalisasi pada data training dan membatasi angka koma menjadi 6 agar proses komputasi bisa lebih ringan.
+- menyiapkan variable X_Train yang menyimpan data dalam bentuk window, dengan setiap window tersebut memiliki panjang 30 data (cek deklarasi di awal).
+- menyiapkan variable y_train sebagai nilai aktual yang akan diprediksi menggunakan data pada setiap window.
+"""
 
 # Panjang data Loopback x hari
 window_size = set_window_size
@@ -159,6 +202,12 @@ print("Panjang Data Train : ", len(train_data))
 print("Panjang Data Train X - loopback : ", len(X_train))
 print("Panjang Data Train y - loopback : ", len(y_train))
 
+"""
+
+> sama saja dengan proses pembentukan pada data training, pembagian data testing menggunakan 20% dari dataset
+
+"""
+
 # Persiapkan data test
 test_data = df[comodity_list[comodity_selected]][-test_size-30:]
 test_data = scaler.transform(test_data.values.reshape(-1,1))
@@ -178,6 +227,12 @@ print("Panjang Data Test : ", len(test_data))
 print("Panjang Data Test X - loopback : ", len(X_test))
 print("Panjang Data Test y - loopback : ", len(y_test))
 
+"""
+
+> setelahnya data tersebut akan dirubah menjadi bentuk array dan akan dilakukan reshape agar format datanya menjadi format tensor (format yang digunakan pada pelatihan deep learning)
+
+"""
+
 # Now X_train and X_test are nested lists (two-dimensional lists) and y_train is a one-dimensional list.
 # We need to convert them to numpy arrays with a higher dimension,
 # which is the data format accepted by TensorFlow when training the neural network:
@@ -196,7 +251,10 @@ print('y_train Shape: ', y_train.shape)
 print('X_test Shape:  ', X_test.shape)
 print('y_test Shape:  ', y_test.shape)
 
-"""## Training Model"""
+"""## Training Model
+
+> Training model dilakukan dengan arsitektur sebagai berikut :
+"""
 
 # Create LSTM + GRU Model
 def define_model():
@@ -211,6 +269,12 @@ def define_model():
 
     return model
 
+"""
+
+> Proses training model dilakukan juga dengan memanfaatkan model checkpoint agar model terbaik dapat diperoleh dari pelatihan dan disimpan dalam bentuk h5 file.
+
+"""
+
 # Training Model
 model = define_model()
 # Define the ModelCheckpoint callback
@@ -220,7 +284,10 @@ history = model.fit(X_train, y_train, epochs=set_max_epochs, batch_size=set_batc
 # Load the best model saved during training
 model = load_model('best_model.h5')
 
-"""## Evaluasi Model"""
+"""## Evaluasi Model
+
+> Evaluasi model dilakukan pada data yang masih dalam bentuk normalisasi dan menggunakan metriks MSE, RMSE, MAPE, dan Accuracy
+"""
 
 # Model Evaluation (Data Normalisasi)
 result = model.evaluate(X_test, y_test)
@@ -238,6 +305,12 @@ print("Test RMSE:", RMSE)
 print("Test MAPE:", MAPE)
 print("Test Accuracy:", Accuracy)
 
+"""
+
+> Evaluasi dilakukan lagi, namun kali ini saya ingin mencoba melihat evaluasinya dalam bentuk data yang sudah di denormalisasi, hal ini saya lakukan untuk mengetahui hasil evaluasi jika pada data ril
+
+"""
+
 # Kalkulasi Evaluasi Model (Data Denormalisasi / Asli)
 y_test_true_dn = np.round(scaler.inverse_transform(y_test)) # Dibulatkan
 y_test_pred_dn = np.round(scaler.inverse_transform(y_pred)) # Dibulatkan
@@ -249,6 +322,12 @@ mape = mean_absolute_percentage_error(y_test_true_dn, y_test_pred_dn) * 100
 print(f"Test MSE on denormalized data: {mse}")
 print(f"Test RMSE on denormalized data: {rmse}")
 print(f"Test MAPE on denormalized data: {mape}%")
+
+"""
+
+> melakukan visualiasi untuk melihat bagaimana performa model untuk memprediksi
+
+"""
 
 # Visualizing Results
 
@@ -271,6 +350,12 @@ plt.legend(['Data Training', 'Data Test Asli', 'Data Test Prediksi'], loc='upper
 plt.grid(color='white')
 plt.show()
 
+"""
+
+> melakukan visualiasi untuk melihat bagaimana performa model untuk memprediksi (tampilkan data test only)
+
+"""
+
 # Menggambar Plot Data Test Only
 plt.figure(figsize=(15, 6), dpi=150)
 plt.rcParams['axes.facecolor'] = 'yellow'
@@ -284,6 +369,12 @@ plt.legend(['Data Test Asli', 'Data Test Prediksi'], loc='upper left', prop={'si
 plt.grid(color='white')
 plt.show()
 
+"""
+
+> pada proses ini saya gunakan untuk melihat bagaimana persentase kesalahan hasil prediksi dengan nilai aktual
+
+"""
+
 # Data Perbandingan dalam bentuk tabel
 flatent_test_true = [item[0] for item in y_test_true]
 flatent_test_pred = [item[0] for item in y_test_pred]
@@ -295,7 +386,7 @@ table_data = pd.DataFrame({
 })
 
 # Calculate the Percentage Error (often used in Mean Absolute Percentage Error or MAPE)
-table_data['Persentase Error'] = ((table_data['Harga Asli'] / table_data['Harga Prediksi']) * 100)
+table_data['Persentase Error'] = (table_data['Harga Prediksi']) / (table_data['Harga Asli']  * 100)
 
 table_data
 
