@@ -44,15 +44,18 @@ Berbagai upaya telah dilakukan oleh pihak terkait untuk mengendalikan fluktuasi 
 Namun, dalam praktiknya, sidak pasar seringkali dilakukan hanya pada waktu-waktu tertentu atau setelah adanya laporan mengenai lonjakan harga yang tidak wajar. Hal ini menyebabkan keterlambatan dalam pengambilan tindakan lanjutan, seperti pengeluaran cadangan pangan, sehingga harga komoditas pangan terus meningkat. Sehingga salah satu cara untuk mengatasi hal tersebut adalah dengan melakukan prediksi harga.
 
 ### Problem Statements
+Harga komoditas pangan di Pasar Kramat Kota Cirebon mengalami fluktuasi yang sangat tinggi dalam tiga tahun terakhir. Kondisi ini menyulitkan instansi pemerintah dan stakeholder terkait, seperti Dinas Perdagangan dan pelaku distribusi pangan, dalam mengantisipasi lonjakan harga secara tepat waktu.
 
-Problem Statements :
-- Bagaimana cara mengatasi Kenaikan harga komoditas pangan yang sangat fluktuatif dan tidak dapat diprediksi?.
-- Bagaimana cara mempercepat penanganan tindak lanjut dari pihak terkait atas kenaikan harga komoditas pangan, agar harga pangan dapat lebih terkendali?
+Dua permasalahan utama yang ingin diselesaikan dalam proyek ini adalah:
+- Bagaimana cara mengatasi kenaikan harga komoditas pangan yang sangat fluktuatif dan sulit diprediksi?
+- Bagaimana cara mempercepat pengambilan tindakan dari pihak terkait untuk mengendalikan harga pangan sebelum terjadi lonjakan yang ekstrem?
 
 ### Goals
-Tujuan dilakukan nya penelitian :
-- untuk mengembangkan model deep learning (LSTM-GRU) sebagai alat untuk prediksi harga komoditas pangan.
-- untuk dijadikan bagian dari percepatan untuk penanganan tindak lanjut dari pihak terkait dalam melakukan pengendalian harga pangan agar bisa tetap terjaga.
+Penelitian ini bertujuan untuk:
+
+- Mengembangkan model prediksi harga komoditas pangan menggunakan pendekatan deep learning berbasis kombinasi LSTM dan GRU. Model ini bertujuan untuk memberikan estimasi harga secara akurat berdasarkan data historis.
+- Menyediakan alat bantu prediksi yang dapat digunakan oleh pemerintah daerah, khususnya Dinas Perdagangan, sebagai bagian dari sistem peringatan dini. Dengan prediksi harga yang akurat, pihak terkait dapat merespons lebih cepat, misalnya melalui intervensi pasar atau distribusi cadangan pangan, sehingga harga tetap terkendali.
+- Memberikan insight berbasis data yang dapat dimanfaatkan oleh peneliti dan pengambil kebijakan untuk perencanaan jangka menengah dan panjang terkait pengelolaan distribusi pangan.
 
 ## Data Understanding
 
@@ -72,9 +75,85 @@ kolom :
 
 ## Data Preparation
 
-- Pemecahahan dataset (80 % train & 20 % test), hal ini diperlukan agar model bisa belajar dengan baik.
-- Normalisasi data dilakukan agar bentuk data menjadi seragam (rentang 0 - 1) dan proses komputasi dalam pelatihan model menjadi lebih ringan.
-- Pembentukan Sliding Window. Dalam konteks prediksi menggunakan deep learning, teknik sliding window membantu memecah data berurutan menjadi segmen-segmen yang lebih kecil sehingga memungkinkan model untuk mempelajari pola-pola lokal dalam data dan membuat prediksi berdasarkan data historis dalam jendela tersebut. jika dari konteks model yang kita buat, saya ingin melakukan prediksi harga berdasarkan data 30 hari terakhir (window_size = 30).
+
+
+Pada tahap ini, dilakukan serangkaian proses untuk menyiapkan data sebelum dimasukkan ke dalam model. Langkah-langkah yang dilakukan sebagai berikut:
+
+1. Pemilihan Data Komoditas Data yang digunakan merupakan harga komoditas tertentu yang dipilih dan ditetapkan pada variable ```commodity_selected``` sebelumnya.
+   
+2. Normalisasi Data Sebelum dilakukan pemisahan data menjadi training dan testing, seluruh data terlebih dahulu digunakan untuk melakukan fitting pada MinMaxScaler. Hal ini bertujuan untuk mendapatkan skala minimum dan maksimum dari keseluruhan dataset, yang kemudian akan digunakan untuk mentransformasi data training dan data testing. Normalisasi ini membantu mempercepat proses pelatihan model dan meningkatkan konvergensi.
+    ```
+    scaler = MinMaxScaler()
+    scaler.fit(df[comodity_list[comodity_selected]].values.reshape(-1,1))
+    ```
+    Scaler ini kemudian disimpan menggunakan joblib untuk keperluan pemodelan selanjutnya.
+
+3. Penentuan Ukuran Data Testing,
+   Proporsi data testing ditentukan menggunakan variabel set_test_size (misalnya 0.2 untuk 20%), kemudian dikonversi ke jumlah data aktual:
+    ```
+        test_size = int(len(df) * set_test_size)
+    ```
+    
+4. Pemisahan Data Training, Normalisasi, dan Pembuatan Dataset Berbasis Window
+   - Pemisahan Data Training (diambil dari awal hingga sebelum data testing)
+   - Normalisasi Data Training
+   - Pembulatan nilai normalisasi ke maksimal 6 angka dibelakang koma, agar proses komputasi menjadi lebih ringan
+   - Membuat Dataset Berbasis Window dengan metode windowed sequence yaitu dengan memanfaatkan 30 data terakhir (window size) sebagai input untuk memprediksi 1 data berikutnya.
+    ```
+    # Panjang data Loopback x hari
+    window_size = set_window_size
+    
+    # Persiapkan data Training 80% dari data, dan normalisasikan
+    train_data = df[comodity_list[comodity_selected]][:-test_size]
+    train_data = scaler.transform(train_data.values.reshape(-1,1))
+    
+    # Membulatkan hingga 6 angka di belakang koma
+    train_data = np.round(train_data, 6)
+    
+    # Siapkan Variable untuk menampung data Train, disesuaikan dengan data loopback yaitu 30
+    X_train = []
+    y_train = []
+    
+    for i in range(window_size, len(train_data)):
+        X_train.append(train_data[i-30:i, 0])
+        y_train.append(train_data[i, 0])
+    ```
+
+5. Pemisahan Data Testing, Normalisasi, dan Pembuatan Dataset Berbasis Window
+   - Data testing diambil dari 30 data sebelum awal data test hingga ke akhir (agar mencakup window size saat transformasi berurutan nanti).
+   - Normalisasi Data Testing
+   - Pembulatan nilai normalisasi ke maksimal 6 angka dibelakang koma, agar proses komputasi menjadi lebih ringan
+   - Membuat Dataset Berbasis Window dengan metode windowed sequence yaitu dengan memanfaatkan 30 data terakhir (window size) sebagai input untuk memprediksi 1 data berikutnya.
+    ```
+    # Persiapkan data test
+    test_data = df[comodity_list[comodity_selected]][-test_size-30:]
+    test_data = scaler.transform(test_data.values.reshape(-1,1))
+    
+    # Membulatkan hingga 6 angka di belakang koma
+    test_data = np.round(test_data, 6)
+    
+    # Siapkan Variable untuk menampung data Test, disesuaikan dengan data loopback yaitu 30
+    X_test = []
+    y_test = []
+    
+    for i in range(window_size, len(test_data)):
+        X_test.append(test_data[i-30:i, 0])
+        y_test.append(test_data[i, 0])
+    ```
+
+6. Konversi ke Format yang Diterima oleh TensorFlow
+   - Data input dan target yang semula berupa list dikonversi ke dalam format numpy array, dan disesuaikan bentuk dimensinya agar dapat digunakan sebagai input dalam pelatihan model Deep Learning.
+    ```
+    X_train = np.array(X_train)
+    X_test  = np.array(X_test)
+    y_train = np.array(y_train)
+    y_test  = np.array(y_test)
+    
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    X_test  = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+    y_train = np.reshape(y_train, (-1,1))
+    y_test  = np.reshape(y_test, (-1,1))
+    ```
 
 ## Modeling
 Pada tahap ini, modelling dilakukan dengan tensorflow dan menggunakan Algoritma LSTM-GRU
@@ -128,6 +207,8 @@ Accuracy = 1 - MAPE
 
 **Hasil Evaluasi**
 
+Model yang dikembangkan dievaluasi menggunakan metrik MSE, RMSE, MAPE, dan Accuracy, baik dalam bentuk data ternormalisasi maupun sudah didenormalisasi.
+
 hasil evaluasi menunjukan performa yang cukup baik dengan nilai sebagai berikut (data masih dalam bentuk normalisasi) : 
 
 ```
@@ -146,4 +227,9 @@ Test MAPE on denormalized data: 2.701%
 Test Accuracy on denormalized data: 97.29%
 ```
 
-kedua hasil evaluasi prediksi tersebut baik masih dalam bentuk normalisasi atau denormalisasi menghasilkan hasil evaluasi yang baik.
+
+**Kesimpulan**
+
+Model prediksi harga komoditas berbasis LSTM-GRU berhasil dibangun dan menunjukkan performa yang sangat baik, dengan tingkat akurasi tinggi, ditandai oleh nilai MAPE sebesar 2.701% setelah denormalisasi. Hasil ini menunjukkan bahwa model mampu memprediksi harga dengan kesalahan yang sangat kecil.
+
+Model ini tidak hanya akurat, tetapi juga praktis dan siap digunakan sebagai alat bantu dalam mendukung pengambilan keputusan berbasis data (data-driven decision making). Dengan adanya prediksi yang presisi, pemerintah dan dinas terkait dapat melakukan intervensi lebih dini untuk menjaga stabilitas harga, mengawasi distribusi, mengendalikan pasokan, dan mengantisipasi fluktuasi harga pangan di pasar. namun perlu dan patut diingat, pemantauan terhadap performa model pun harus dilakukan secara berkala agar model senantiasa dalam performa terbaiknya.
